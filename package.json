@@ -1,0 +1,21 @@
+{
+  "name": "iov",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [],
+  "dependencies": {
+    "bluebird": "^2.9.24",
+    "chalk": "^1.0.0",
+    "express": "^4.12.4",
+    "glob": "^5.0.10",
+    "include-all": "~0.1.3",
+    "xml2js": "~0.4.6"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "debug": "node debug server.js"
+  },
+  "main": "server.js",
+  "license": ""
+}

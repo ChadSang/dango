@@ -1,0 +1,16 @@
+// It should change speed accordingly and then print channels on update.
+=> {
+  type: 'init', channelCount: 2, maxDistance: 10,
+  nodes: [
+    {"uuid": "uuid-01", "pos" : [0, 0], "speed" : [0, 0]},
+    {"uuid": "uuid-02", "pos" : [0, 0], "speed" : [1, 0]},
+    {"uuid": "uuid-03", "pos" : [0, 0], "speed" : [4, 0]},
+    {"uuid": "uuid-04", "pos" : [0, 0], "speed" : [5, 0]},
+    {"uuid": "uuid-05", "pos" : [9, 0], "speed" : [5, 0]},
+    {"uuid": "uuid-06", "pos" : [18, 0], "speed" : [5, 0]},
+  ],
+}
+=> {
+  type: 'update', nodes: [{"uuid": "uuid-01", "speed" : [0, 1]}]
+}
+<= {type: 'channels', channels: Array}

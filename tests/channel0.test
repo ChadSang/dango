@@ -1,0 +1,19 @@
+// It should connect channels only for nodes within maxDistance.
+=> {
+  type: 'init', channelCount: 1, maxDistance: 6,
+  nodes: [
+    {"uuid": "uuid-01", "pos" : [5, 0], "speed" : [0, 0]},
+    {"uuid": "uuid-02", "pos" : [0, 0], "speed" : [5, 0]},
+  ],
+}
+=> {type: 'update', nodes: []}
+// Pos-01: [5, 0], Pos-02: [5, 0], Dist: 0 (linked).
+<= {type: 'channels', channels: [[["uuid-01", "uuid-02"]]]}
+
+=> {type: 'update', nodes: []}
+// Pos-01: [5, 0], Pos-02: [10, 0], Dist: 1 (linked).
+<= {type: 'channels', channels: [[["uuid-01", "uuid-02"]]]}
+
+=> {type: 'update', nodes: []}
+// Pos-01: [5, 0], Pos-02: [15, 0], Dist: 2 (UNREACHABLE).
+<= {type: 'channels', channels: [[]]}
