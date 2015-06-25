@@ -17,5 +17,8 @@
     "debug": "node debug server.js"
   },
   "main": "server.js",
-  "license": ""
+  "license": "",
+  "devDependencies": {
+    "coffeeify": "^1.1.0"
+  }
 }
