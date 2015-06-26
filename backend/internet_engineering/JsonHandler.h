@@ -34,14 +34,14 @@ class JsonHandler
 		else if (str == "u") {
 			// update
 			str = "{ \"type\": \"update\", \"nodes\" : [ \
-				  			{\"uuid\": \"uuid-01\", \"speed\" : [0, 1]} \
-										] }";
+			{\"uuid\": \"uuid-01\", \"speed\" : [0, 1]} \
+			] }";
 		}
 		else if (str[0] == 'a') {
 			// "a uuid-01"
 			str = "{\"type\": \"nodeAdd\", \"nodes\": [ \
-				  			{\"uuid\": \"" + str.substr(2) + "\", \"pos\" : [10, 20], \"speed\" : [40, 50]} \
-										]}";
+			{\"uuid\": \"" + str.substr(2) + "\", \"pos\" : [10, 20], \"speed\" : [40, 50]} \
+			]}";
 		}
 		else if (str[0] == 'r') {
 			// "r uuid-01"
@@ -127,6 +127,76 @@ public:
 			}
 			else {
 				// should never be here
+			}
+		}
+	}
+
+	void run_aodv() {
+		while (getline(cin, str)) {
+			// expand(str);
+			
+			reader.parse(str, input);
+			string type = input["type"].asString();
+			if (type == "init") {
+				rm = new RouteManager(input["channelCount"].asInt(), input["maxDistance"].asInt());
+				cm = rm->get_channel_manager();
+				nm = cm->get_node_manager();
+
+				int node_cnt = input["nodes"].size();
+				for (int i = 0; i < node_cnt; ++i) {
+					Value new_node = input["nodes"][i];
+					nm->add_node(
+						new_node["uuid"].asString(),
+						new_node["pos"][0].asInt(),
+						new_node["pos"][1].asInt(),
+						new_node["speed"][0].asInt(),
+						new_node["speed"][1].asInt());
+				}
+
+				print(ok);
+			}
+			else if (type == "update") {
+				int node_cnt = input["nodes"].size();
+				for (int i = 0; i < node_cnt; ++i) {
+					Value new_node = input["nodes"][i];
+					nm->update_node(
+						new_node["uuid"].asString(),
+						new_node["speed"][0].asInt(),
+						new_node["speed"][1].asInt());
+				}
+				rm->flush();
+
+				print(cm->to_json());
+			}
+			else if (type == "nodeAdd") {
+				int node_cnt = input["nodes"].size();
+				for (int i = 0; i < node_cnt; ++i) {
+					Value new_node = input["nodes"][i];
+					nm->add_node(
+						new_node["uuid"].asString(),
+						new_node["pos"][0].asInt(),
+						new_node["pos"][1].asInt(),
+						new_node["speed"][0].asInt(),
+						new_node["speed"][1].asInt());
+				}
+
+				print(ok);
+			}
+			else if (type == "nodeRemove") {
+				int node_cnt = input["nodeIds"].size();
+				for (int i = 0; i < node_cnt; ++i) {
+					string node_id = input["nodeIds"][i].asString();
+					nm->del_node(node_id);
+				}
+
+				print(ok);
+			}
+			else if (type == "listRoutes") {
+				print(nm->routing_tables_to_json());
+			}
+			else {
+				// wrong type
+				assert(0);
 			}
 		}
 	}

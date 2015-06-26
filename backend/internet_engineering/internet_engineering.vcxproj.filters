@@ -39,6 +39,21 @@
     <ClInclude Include="JsonHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="AODVEntry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RouteRequest.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RouteReply.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RouteError.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NodeManager.cpp">
@@ -63,6 +78,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="JsonHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AODVEntry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RouteRequest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RouteReply.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RouteError.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

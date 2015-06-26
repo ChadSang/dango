@@ -64,6 +64,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AODVEntry.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="ChannelManager.h" />
     <ClInclude Include="JsonHandler.h" />
@@ -71,9 +72,14 @@
     <ClInclude Include="json\json.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeManager.h" />
+    <ClInclude Include="Physics.h" />
+    <ClInclude Include="RouteError.h" />
     <ClInclude Include="RouteManager.h" />
+    <ClInclude Include="RouteReply.h" />
+    <ClInclude Include="RouteRequest.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AODVEntry.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="ChannelManager.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
@@ -81,7 +87,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeManager.cpp" />
+    <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="RouteError.cpp" />
     <ClCompile Include="RouteManager.cpp" />
+    <ClCompile Include="RouteReply.cpp" />
+    <ClCompile Include="RouteRequest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
