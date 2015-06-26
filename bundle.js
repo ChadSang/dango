@@ -18,7 +18,14 @@ module.exports = Backend = (function() {
           return buf += data;
         });
         return res.on('end', function() {
-          frame = JSON.parse(buf);
+          frame = (function() {
+            try {
+              return JSON.parse(buf);
+            } catch (_error) {}
+          })();
+          if (!frame) {
+            return;
+          }
           if (typeof callback === "function") {
             callback(frame);
           }
@@ -74,6 +81,7 @@ module.exports = Backend = (function() {
   };
 
   Backend.prototype.listRoutes = function(cb) {
+    return;
     return this.send({
       type: 'listRoutes'
     }, cb);
