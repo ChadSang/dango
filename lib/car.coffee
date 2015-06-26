@@ -13,9 +13,10 @@ module.exports = class Car extends Drawable
   draw: ->
     @layer.fillStyle = @color
     @layer.fillRect(@x - @w / 2, @y - @h / 2, @w, @h)
+    return unless @targetSituation
     @layer.setLineDash([@speed / 2])
     @layer.strokeStyle = @color
-    @layer.lineWidth = 0.02
+    @layer.lineWidth = 0.03
     @layer.beginPath()
     @layer.moveTo(@x, @y)
     for waypoint in @waypoints
@@ -53,6 +54,9 @@ module.exports = class Car extends Drawable
     if not dest
       @sx = 0
       @sy = 0
+      if @targetSituation
+        @targetSituation.handledBy(this)
+        @targetSituation = null
       target = @roadmap.snapToCross(Math.random() * 5, Math.random() * 5)
       @setTarget(target)
     else

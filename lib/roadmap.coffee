@@ -32,6 +32,8 @@ module.exports = class Roadmap extends Drawable
       return 'c' if roadDir
       roadDir = 'x'
     return roadDir
+  distance: (x1, y1, x2, y2) ->
+    Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
   floatNear: (a, b, epsilon=0.001) ->
     return true if a == b
     diff = Math.abs(a - b)

@@ -15,12 +15,13 @@ module.exports = class Map
     @backend = new Backend()
     @roadmap = new Roadmap(5, 5, @layers.road)
     carColors = ['#3fa', '#fae', '#ecf', '#f33', '#3f3', '#33f', '#f0d', '#df0']
+    carColors = ['#f00', '#0e0', '#00f']
     @cars = []
     for i in [0...10]
       [x, y] = @roadmap.snapToRoad(Math.random() * 5, Math.random() * 5)
       @cars.push(new Car(x, y, @layers.car, @roadmap))
       @cars[i].uuid = i.toString()
-      @cars[i].color = carColors[i % carColors.length]
+      @cars[i].color = carColors[i % 3]
     @backend.onChannels = @onChannels.bind(this)
     @backend.onRoutes = @onRoutes.bind(@)
     @backend.init @cars
@@ -58,20 +59,29 @@ module.exports = class Map
     @createLayer('message')
     return
   draw: ->
-    @clearLayer('car')
-    for _, layer of @layers
-      for drawable in layer.dango.drawables
-        drawable.draw()
-    return
-  tick: ->
+    @roadmap.draw()
     @clearLayer('car')
     for car in @cars
       car.tick()
       car.draw()
     @backend.updateCars @cars
-    if Math.random() < 0.1
-      s = new Situation(Math.random() * 5, Math.random() * 5, @layers.situation)
+    @clearLayer('situation')
+    for s in @layers.situation.dango.drawables
       s.draw()
+    return
+  tick: ->
+    @draw()
+    if Math.random() < 0.08
+      s = new Situation(Math.random() * 5, Math.random() * 5, @layers.situation)
+      availableCars = []
+      for car in @cars when car.color == s.color and not car.targetSituation
+        dist = @roadmap.distance(car.x, car.y, s.x, s.y)
+        availableCars.push([car, dist])
+      return if not availableCars.length
+      availableCars.sort (a, b) -> a[1] - b[1]
+      handler = availableCars[0][0]
+      handler.targetSituation = s
+      handler.setTarget([s.x, s.y])
   onChannels: (frame) ->
     @clearLayer('conn')
     for i in [0...frame.channels.length]

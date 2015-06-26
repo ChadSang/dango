@@ -119,9 +119,12 @@ module.exports = Car = (function(superClass) {
     var i, len, ref, waypoint;
     this.layer.fillStyle = this.color;
     this.layer.fillRect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
+    if (!this.targetSituation) {
+      return;
+    }
     this.layer.setLineDash([this.speed / 2]);
     this.layer.strokeStyle = this.color;
-    this.layer.lineWidth = 0.02;
+    this.layer.lineWidth = 0.03;
     this.layer.beginPath();
     this.layer.moveTo(this.x, this.y);
     ref = this.waypoints;
@@ -176,6 +179,10 @@ module.exports = Car = (function(superClass) {
     if (!dest) {
       this.sx = 0;
       this.sy = 0;
+      if (this.targetSituation) {
+        this.targetSituation.handledBy(this);
+        this.targetSituation = null;
+      }
       target = this.roadmap.snapToCross(Math.random() * 5, Math.random() * 5);
       this.setTarget(target);
     } else {
@@ -260,12 +267,13 @@ module.exports = Map = (function() {
     this.backend = new Backend();
     this.roadmap = new Roadmap(5, 5, this.layers.road);
     carColors = ['#3fa', '#fae', '#ecf', '#f33', '#3f3', '#33f', '#f0d', '#df0'];
+    carColors = ['#f00', '#0e0', '#00f'];
     this.cars = [];
     for (i = j = 0; j < 10; i = ++j) {
       ref = this.roadmap.snapToRoad(Math.random() * 5, Math.random() * 5), x = ref[0], y = ref[1];
       this.cars.push(new Car(x, y, this.layers.car, this.roadmap));
       this.cars[i].uuid = i.toString();
-      this.cars[i].color = carColors[i % carColors.length];
+      this.cars[i].color = carColors[i % 3];
     }
     this.backend.onChannels = this.onChannels.bind(this);
     this.backend.onRoutes = this.onRoutes.bind(this);
@@ -316,21 +324,8 @@ module.exports = Map = (function() {
   };
 
   Map.prototype.draw = function() {
-    var _, drawable, j, layer, len, ref, ref1;
-    this.clearLayer('car');
-    ref = this.layers;
-    for (_ in ref) {
-      layer = ref[_];
-      ref1 = layer.dango.drawables;
-      for (j = 0, len = ref1.length; j < len; j++) {
-        drawable = ref1[j];
-        drawable.draw();
-      }
-    }
-  };
-
-  Map.prototype.tick = function() {
-    var car, j, len, ref, s;
+    var car, j, k, len, len1, ref, ref1, s;
+    this.roadmap.draw();
     this.clearLayer('car');
     ref = this.cars;
     for (j = 0, len = ref.length; j < len; j++) {
@@ -339,9 +334,38 @@ module.exports = Map = (function() {
       car.draw();
     }
     this.backend.updateCars(this.cars);
-    if (Math.random() < 0.1) {
+    this.clearLayer('situation');
+    ref1 = this.layers.situation.dango.drawables;
+    for (k = 0, len1 = ref1.length; k < len1; k++) {
+      s = ref1[k];
+      s.draw();
+    }
+  };
+
+  Map.prototype.tick = function() {
+    var availableCars, car, dist, handler, j, len, ref, s;
+    this.draw();
+    if (Math.random() < 0.08) {
       s = new Situation(Math.random() * 5, Math.random() * 5, this.layers.situation);
-      return s.draw();
+      availableCars = [];
+      ref = this.cars;
+      for (j = 0, len = ref.length; j < len; j++) {
+        car = ref[j];
+        if (!(car.color === s.color && !car.targetSituation)) {
+          continue;
+        }
+        dist = this.roadmap.distance(car.x, car.y, s.x, s.y);
+        availableCars.push([car, dist]);
+      }
+      if (!availableCars.length) {
+        return;
+      }
+      availableCars.sort(function(a, b) {
+        return a[1] - b[1];
+      });
+      handler = availableCars[0][0];
+      handler.targetSituation = s;
+      return handler.setTarget([s.x, s.y]);
     }
   };
 
@@ -456,6 +480,10 @@ module.exports = Roadmap = (function(superClass) {
     return roadDir;
   };
 
+  Roadmap.prototype.distance = function(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+  };
+
   Roadmap.prototype.floatNear = function(a, b, epsilon) {
     var diff;
     if (epsilon == null) {
@@ -534,21 +562,22 @@ module.exports = Situation = (function(superClass) {
     this.x = x1;
     this.y = y1;
     Situation.__super__.constructor.call(this, this.x, this.y, 0.2, 0.2, layer);
-    this.color = '#f00';
+    this.color = ['#f00', '#0e0', '#00f'][Math.floor(Math.random() * 3)];
     this.selected = false;
+    this.handled = false;
   }
 
   Situation.prototype.draw = function() {
+    if (this.handled) {
+      return;
+    }
     this.layer.fillStyle = this.color;
     this.layer.beginPath();
-    this.layer.circle(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
+    this.layer.ellipse(this.x, this.y, this.w / 2, this.h / 2, 0, 0, 2 * Math.PI);
     this.layer.fill();
-    if (this.selected) {
-      this.layer.strokeStyle = '#ff0';
-      this.layer.beginPath();
-      this.layer.ellipse(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
-      return this.layer.stroke();
-    }
+    this.layer.strokeStyle = '#ff0';
+    this.layer.lineWidth = 0.02;
+    return this.layer.stroke();
   };
 
   Situation.prototype.hitTest = function(x, y) {
@@ -558,6 +587,10 @@ module.exports = Situation = (function(superClass) {
     right = left + this.w;
     bottom = top + this.h;
     return (x >= left && x <= right) && (y >= top && y <= bottom);
+  };
+
+  Situation.prototype.handledBy = function(car) {
+    return this.handled = true;
   };
 
   Situation.prototype.tick = function() {};
