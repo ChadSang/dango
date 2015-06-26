@@ -315,7 +315,7 @@ public:
 		}
 	}
 	Json::Value routing_table_to_json() {
-		Json::Value routes;
+		Json::Value routes(Json::arrayValue);
 		for (auto iter : routing_table) {
 			Json::Value route;
 

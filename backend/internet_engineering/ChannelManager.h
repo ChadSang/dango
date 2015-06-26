@@ -82,12 +82,12 @@ public:
 		Json::Value output;
 		output["type"] = "channels";
 		connected_nodes = nodes->get_channels();
-		Json::Value channels;
+		Json::Value channels(Json::arrayValue);
 		for (int i = 0; i < channel_cnt; ++i) {
 			auto channel_users = connected_nodes[i];
-			Json::Value links;
+			Json::Value links(Json::arrayValue);
 			for (auto iter = channel_users.begin(); iter != channel_users.end(); ++iter) {
-				Json::Value link;
+				Json::Value link(Json::arrayValue);
 				link.append(nodes->get_uuid_by_index((*iter).first));
 				link.append(nodes->get_uuid_by_index((*iter).second));
 				links.append(link);

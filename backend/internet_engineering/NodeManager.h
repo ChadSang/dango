@@ -91,7 +91,7 @@ public:
 		Json::Value output;
 		output["type"] = "routes";
 
-		Json::Value nodes;
+		Json::Value nodes(Json::arrayValue);
 		int node_size = all_nodes.size();
 		for (int node_index = 0; node_index < node_size; ++node_index) {
 			if (valid_nodes[node_index]) {

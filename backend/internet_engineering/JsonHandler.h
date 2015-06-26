@@ -66,7 +66,7 @@ public:
 		while (getline(cin, str)) {
 			expand(str);
 			
-			cerr << "===============================" << endl;
+			// cerr << "===============================" << endl;
 			reader.parse(str, input);
 			string type = input["type"].asString();
 			if (type == "init") {
@@ -129,7 +129,7 @@ public:
 			else {
 				// should never be here
 			}
-			rm->output();
+			// rm->output();
 		}
 	}
 
