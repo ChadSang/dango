@@ -1,6 +1,7 @@
 Viewport = require './viewport'
 Drawable = require './drawable'
 Car = require './car'
+Situation = require './situation'
 Roadmap = require './roadmap'
 Backend = require './backend'
 
@@ -52,6 +53,7 @@ module.exports = class Map
   resetLayers: ->
     @createLayer('road')
     @createLayer('car')
+    @createLayer('situation')
     @createLayer('conn')
     @createLayer('message')
     return
@@ -67,6 +69,9 @@ module.exports = class Map
       car.tick()
       car.draw()
     @backend.updateCars @cars
+    if Math.random() < 0.1
+      s = new Situation(Math.random() * 5, Math.random() * 5, @layers.situation)
+      s.draw()
   onChannels: (frame) ->
     @clearLayer('conn')
     for i in [0...frame.channels.length]
