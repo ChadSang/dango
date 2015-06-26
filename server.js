@@ -8,7 +8,7 @@ var fs = require('fs');
 var app = express();
 
 
-var cp = child_process.spawn('./backend/main');
+var cp = child_process.spawn('./backend/Debug/internet_engineering');
 var buf = "";
 cp.stdout.on('data', function (data) {
   var str = data.toString('utf-8')
