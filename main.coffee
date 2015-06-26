@@ -26,9 +26,12 @@ map.backend.onRoutes = (routes) ->
   if selectedRoutes
     for route in selectedRoutes
       item = carRouteTemplate.cloneNode(true)
-      item.querySelector('.dest-dist').textContent = route.dist.toFixed(2)
+      item.querySelector('.dest-dist').textContent = route.dist.toFixed(0)
+      channelColors = ['#00f', '#f00', '#0f0', '#ff0', '#f0f', '#0ff']
       channelDisp = "==#{route.channel}==>"
       item.querySelector('.dest-channel').textContent = channelDisp
+      color = channelColors[route.channel % channelColors.length]
+      item.querySelector('.dest-channel').style.color = color
       item.querySelector('.dest-uuid').textContent = route.dest
       destCar = null
       for car in map.cars
@@ -60,11 +63,15 @@ mapContainer.addEventListener 'mousedown', (e) ->
         selectedCar.color
       document.querySelector('.car-uuid').textContent = selectedCar.uuid
       updateCarInfo()
-  else if selectedCar
-    #target = map.roadmap.snapToRoad(target[0], target[1])
-    return if target[0] < 0 or target[1] < 0
-    return if target[0] > 5 or target[1] > 5
-    selectedCar.setTarget(target)
+  else
+    map.addSituation(target)
+    ###
+    if selectedCar
+      #target = map.roadmap.snapToRoad(target[0], target[1])
+      return if target[0] < 0 or target[1] < 0
+      return if target[0] > 5 or target[1] > 5
+      selectedCar.setTarget(target)
+    ###
   if not clock
     map.draw()
 

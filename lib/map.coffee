@@ -62,26 +62,31 @@ module.exports = class Map
     @roadmap.draw()
     @clearLayer('car')
     for car in @cars
-      car.tick()
       car.draw()
     @backend.updateCars @cars
     @clearLayer('situation')
     for s in @layers.situation.dango.drawables
       s.draw()
     return
+  addSituation: ([x, y]) ->
+    s = new Situation(x, y, @layers.situation)
+    availableCars = []
+    for car in @cars when car.color == s.color and not car.targetSituation
+      dist = @roadmap.distance(car.x, car.y, s.x, s.y)
+      availableCars.push([car, dist])
+    if not availableCars.length
+      s.handled = true
+      return
+    availableCars.sort (a, b) -> a[1] - b[1]
+    handler = availableCars[0][0]
+    handler.targetSituation = s
+    handler.setTarget([s.x, s.y])
   tick: ->
-    @draw()
+    for car in @cars
+      car.tick()
     if Math.random() < 0.08
-      s = new Situation(Math.random() * 5, Math.random() * 5, @layers.situation)
-      availableCars = []
-      for car in @cars when car.color == s.color and not car.targetSituation
-        dist = @roadmap.distance(car.x, car.y, s.x, s.y)
-        availableCars.push([car, dist])
-      return if not availableCars.length
-      availableCars.sort (a, b) -> a[1] - b[1]
-      handler = availableCars[0][0]
-      handler.targetSituation = s
-      handler.setTarget([s.x, s.y])
+      @addSituation([Math.random() * 5, Math.random() * 5])
+    @draw()
   onChannels: (frame) ->
     @clearLayer('conn')
     for i in [0...frame.channels.length]
@@ -95,6 +100,7 @@ module.exports = class Map
     return
   onRoutes: -> null
   drawConnection: (carA, carB, channel) ->
+    return
     layer = @layers.conn
     channelColors = ['#00f', '#f00', '#0f0', '#ff0', '#f0f', '#0ff']
     channelLineDash = [[], [0.1], [0.05], [0.1, 0.05], [0.05, 0.1], [0.1, 0.1, 0.05, 0.05]]

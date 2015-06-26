@@ -330,7 +330,6 @@ module.exports = Map = (function() {
     ref = this.cars;
     for (j = 0, len = ref.length; j < len; j++) {
       car = ref[j];
-      car.tick();
       car.draw();
     }
     this.backend.updateCars(this.cars);
@@ -342,31 +341,43 @@ module.exports = Map = (function() {
     }
   };
 
-  Map.prototype.tick = function() {
-    var availableCars, car, dist, handler, j, len, ref, s;
-    this.draw();
-    if (Math.random() < 0.08) {
-      s = new Situation(Math.random() * 5, Math.random() * 5, this.layers.situation);
-      availableCars = [];
-      ref = this.cars;
-      for (j = 0, len = ref.length; j < len; j++) {
-        car = ref[j];
-        if (!(car.color === s.color && !car.targetSituation)) {
-          continue;
-        }
-        dist = this.roadmap.distance(car.x, car.y, s.x, s.y);
-        availableCars.push([car, dist]);
+  Map.prototype.addSituation = function(arg) {
+    var availableCars, car, dist, handler, j, len, ref, s, x, y;
+    x = arg[0], y = arg[1];
+    s = new Situation(x, y, this.layers.situation);
+    availableCars = [];
+    ref = this.cars;
+    for (j = 0, len = ref.length; j < len; j++) {
+      car = ref[j];
+      if (!(car.color === s.color && !car.targetSituation)) {
+        continue;
       }
-      if (!availableCars.length) {
-        return;
-      }
-      availableCars.sort(function(a, b) {
-        return a[1] - b[1];
-      });
-      handler = availableCars[0][0];
-      handler.targetSituation = s;
-      return handler.setTarget([s.x, s.y]);
+      dist = this.roadmap.distance(car.x, car.y, s.x, s.y);
+      availableCars.push([car, dist]);
     }
+    if (!availableCars.length) {
+      s.handled = true;
+      return;
+    }
+    availableCars.sort(function(a, b) {
+      return a[1] - b[1];
+    });
+    handler = availableCars[0][0];
+    handler.targetSituation = s;
+    return handler.setTarget([s.x, s.y]);
+  };
+
+  Map.prototype.tick = function() {
+    var car, j, len, ref;
+    ref = this.cars;
+    for (j = 0, len = ref.length; j < len; j++) {
+      car = ref[j];
+      car.tick();
+    }
+    if (Math.random() < 0.08) {
+      this.addSituation([Math.random() * 5, Math.random() * 5]);
+    }
+    return this.draw();
   };
 
   Map.prototype.onChannels = function(frame) {
@@ -393,6 +404,7 @@ module.exports = Map = (function() {
 
   Map.prototype.drawConnection = function(carA, carB, channel) {
     var channelColors, channelLineDash, layer;
+    return;
     layer = this.layers.conn;
     channelColors = ['#00f', '#f00', '#0f0', '#ff0', '#f0f', '#0ff'];
     channelLineDash = [[], [0.1], [0.05], [0.1, 0.05], [0.05, 0.1], [0.1, 0.1, 0.05, 0.05]];
@@ -671,7 +683,7 @@ updateCarInfo = function() {
 };
 
 map.backend.onRoutes = function(routes) {
-  var car, channelDisp, destCar, item, j, k, l, len, len1, len2, node, ref, ref1, route, selectedRoutes;
+  var car, channelColors, channelDisp, color, destCar, item, j, k, l, len, len1, len2, node, ref, ref1, route, selectedRoutes;
   if (!selectedCar) {
     return;
   }
@@ -688,9 +700,12 @@ map.backend.onRoutes = function(routes) {
     for (k = 0, len1 = selectedRoutes.length; k < len1; k++) {
       route = selectedRoutes[k];
       item = carRouteTemplate.cloneNode(true);
-      item.querySelector('.dest-dist').textContent = route.dist.toFixed(2);
+      item.querySelector('.dest-dist').textContent = route.dist.toFixed(0);
+      channelColors = ['#00f', '#f00', '#0f0', '#ff0', '#f0f', '#0ff'];
       channelDisp = "==" + route.channel + "==>";
       item.querySelector('.dest-channel').textContent = channelDisp;
+      color = channelColors[route.channel % channelColors.length];
+      item.querySelector('.dest-channel').style.color = color;
       item.querySelector('.dest-uuid').textContent = route.dest;
       destCar = null;
       ref1 = map.cars;
@@ -737,14 +752,16 @@ mapContainer.addEventListener('mousedown', function(e) {
       document.querySelector('.car-uuid').textContent = selectedCar.uuid;
       updateCarInfo();
     }
-  } else if (selectedCar) {
-    if (target[0] < 0 || target[1] < 0) {
-      return;
-    }
-    if (target[0] > 5 || target[1] > 5) {
-      return;
-    }
-    selectedCar.setTarget(target);
+  } else {
+    map.addSituation(target);
+
+    /*
+    if selectedCar
+      #target = map.roadmap.snapToRoad(target[0], target[1])
+      return if target[0] < 0 or target[1] < 0
+      return if target[0] > 5 or target[1] > 5
+      selectedCar.setTarget(target)
+     */
   }
   if (!clock) {
     return map.draw();
