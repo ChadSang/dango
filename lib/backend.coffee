@@ -36,4 +36,5 @@ module.exports = class Backend
       nodes: @nodes(cars)
     @send(frame, cb)
   listRoutes: (cb) ->
+    return
     @send({type: 'listRoutes'}, cb)
