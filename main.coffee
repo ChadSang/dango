@@ -20,8 +20,9 @@ mapContainer.addEventListener 'mousedown', (e) ->
         car.selected = true
         selectedCar = car
         break
-    car.selected = false for car in map.cars
-    selectedCar.selected = true
+    if selectedCar
+      car.selected = false for car in map.cars
+      selectedCar.selected = true
   else if selectedCar
     #target = map.roadmap.snapToRoad(target[0], target[1])
     return if target[0] < 0 or target[1] < 0

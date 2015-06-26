@@ -11,7 +11,9 @@ Object.getPrototypeOf(chalk.blue).write = function (str) {
 }
 
 var runTest = function (test, cb) {
-  var cp = child_process.spawn('./backend/Debug/internet_engineering');
+  var cp = child_process.spawn('./backend/Debug/internet_engineering', {
+    stdio: ['pipe', 'pipe', process.stderr]
+  });
   var frame = 0;
   var buf = "";
   cp.stdout.on('data', function (data) {

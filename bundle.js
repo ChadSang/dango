@@ -546,12 +546,14 @@ mapContainer.addEventListener('mousedown', function(e) {
         break;
       }
     }
-    ref1 = map.cars;
-    for (k = 0, len = ref1.length; k < len; k++) {
-      car = ref1[k];
-      car.selected = false;
+    if (selectedCar) {
+      ref1 = map.cars;
+      for (k = 0, len = ref1.length; k < len; k++) {
+        car = ref1[k];
+        car.selected = false;
+      }
+      selectedCar.selected = true;
     }
-    selectedCar.selected = true;
   } else if (selectedCar) {
     if (target[0] < 0 || target[1] < 0) {
       return;
