@@ -5,8 +5,8 @@
 #include <map>
 #include <set>
 
-#include "json\json.h"
-#include "json\json-forwards.h"
+#include "json/json.h"
+#include "json/json-forwards.h"
 
 #include "Physics.h"
 

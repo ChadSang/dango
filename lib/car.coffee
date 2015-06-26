@@ -9,6 +9,7 @@ module.exports = class Car extends Drawable
     @waypoints = []
     @color = '#afc'
     @target = null
+    @selected = false
   draw: ->
     @layer.fillStyle = @color
     @layer.fillRect(@x - @w / 2, @y - @h / 2, @w, @h)
@@ -21,6 +22,17 @@ module.exports = class Car extends Drawable
       @layer.lineTo(waypoint[0], waypoint[1])
     @layer.stroke()
     @layer.setLineDash([])
+    if @selected
+      @layer.strokeStyle = '#f00'
+      @layer.beginPath()
+      @layer.rect(@x - @w / 2, @y - @h / 2, @w, @h)
+      @layer.stroke()
+  hitTest: (x, y) ->
+    left = @x - @w / 2
+    top = @y - @h / 2
+    right = left + @w
+    bottom = top + @h
+    return (x >= left and x <= right) and (y >= top and y <= bottom)
   adjustedSpeed: (source, target, speed) ->
     dist = target - source
     if dist >= speed

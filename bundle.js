@@ -79,9 +79,9 @@ Drawable = require('./drawable');
 module.exports = Car = (function(superClass) {
   extend(Car, superClass);
 
-  function Car(x, y, layer, roadmap) {
-    this.x = x;
-    this.y = y;
+  function Car(x1, y1, layer, roadmap) {
+    this.x = x1;
+    this.y = y1;
     this.roadmap = roadmap;
     Car.__super__.constructor.call(this, this.x, this.y, 0.2, 0.2, layer);
     this.sx = 0;
@@ -90,6 +90,7 @@ module.exports = Car = (function(superClass) {
     this.waypoints = [];
     this.color = '#afc';
     this.target = null;
+    this.selected = false;
   }
 
   Car.prototype.draw = function() {
@@ -107,7 +108,22 @@ module.exports = Car = (function(superClass) {
       this.layer.lineTo(waypoint[0], waypoint[1]);
     }
     this.layer.stroke();
-    return this.layer.setLineDash([]);
+    this.layer.setLineDash([]);
+    if (this.selected) {
+      this.layer.strokeStyle = '#f00';
+      this.layer.beginPath();
+      this.layer.rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
+      return this.layer.stroke();
+    }
+  };
+
+  Car.prototype.hitTest = function(x, y) {
+    var bottom, left, right, top;
+    left = this.x - this.w / 2;
+    top = this.y - this.h / 2;
+    right = left + this.w;
+    bottom = top + this.h;
+    return (x >= left && x <= right) && (y >= top && y <= bottom);
   };
 
   Car.prototype.adjustedSpeed = function(source, target, speed) {
@@ -499,7 +515,7 @@ module.exports = Viewport = (function() {
 
 
 },{}],7:[function(require,module,exports){
-var Map, clock, map, mapContainer, nextButton, pause, pauseButton, play, playButton;
+var Map, clock, map, mapContainer, nextButton, pause, pauseButton, play, playButton, selectedCar;
 
 Map = require('./lib/map');
 
@@ -513,23 +529,37 @@ window.addEventListener('resize', function(e) {
   return map.resize();
 });
 
+selectedCar = null;
+
 mapContainer.addEventListener('mousedown', function(e) {
-  var target, vh, vw;
+  var car, i, j, k, len, ref, ref1, target, vh, vw;
   e.preventDefault();
   vw = mapContainer.offsetWidth;
   vh = mapContainer.offsetHeight;
   target = map.viewport.invTransformPos(e.offsetX, e.offsetY, vw, vh);
-  target = map.roadmap.snapToRoad(target[0], target[1]);
-  if (target[0] < 0 || target[1] < 0) {
-    return;
-  }
-  if (target[0] > 5 || target[1] > 5) {
-    return;
-  }
   if (e.which === 1) {
-    map.cars[0].setTarget(target);
-  } else {
-    map.cars[1].setTarget(target);
+    for (i = j = ref = map.cars.length - 1; ref <= 0 ? j <= 0 : j >= 0; i = ref <= 0 ? ++j : --j) {
+      car = map.cars[i];
+      if (car.hitTest(target[0], target[1])) {
+        car.selected = true;
+        selectedCar = car;
+        break;
+      }
+    }
+    ref1 = map.cars;
+    for (k = 0, len = ref1.length; k < len; k++) {
+      car = ref1[k];
+      car.selected = false;
+    }
+    selectedCar.selected = true;
+  } else if (selectedCar) {
+    if (target[0] < 0 || target[1] < 0) {
+      return;
+    }
+    if (target[0] > 5 || target[1] > 5) {
+      return;
+    }
+    selectedCar.setTarget(target);
   }
   if (!clock) {
     return map.draw();

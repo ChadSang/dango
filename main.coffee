@@ -7,18 +7,26 @@ map.draw()
 window.addEventListener 'resize', (e) ->
   map.resize()
 
+selectedCar = null
 mapContainer.addEventListener 'mousedown', (e) ->
   e.preventDefault()
   vw = mapContainer.offsetWidth
   vh = mapContainer.offsetHeight
   target = map.viewport.invTransformPos(e.offsetX, e.offsetY, vw, vh)
-  target = map.roadmap.snapToRoad(target[0], target[1])
-  return if target[0] < 0 or target[1] < 0
-  return if target[0] > 5 or target[1] > 5
   if e.which == 1
-    map.cars[0].setTarget(target)
-  else
-    map.cars[1].setTarget(target)
+    for i in [(map.cars.length-1)..0]
+      car = map.cars[i]
+      if car.hitTest(target[0], target[1])
+        car.selected = true
+        selectedCar = car
+        break
+    car.selected = false for car in map.cars
+    selectedCar.selected = true
+  else if selectedCar
+    #target = map.roadmap.snapToRoad(target[0], target[1])
+    return if target[0] < 0 or target[1] < 0
+    return if target[0] > 5 or target[1] > 5
+    selectedCar.setTarget(target)
   if not clock
     map.draw()
 
