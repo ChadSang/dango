@@ -8,6 +8,38 @@ window.addEventListener 'resize', (e) ->
   map.resize()
 
 selectedCar = null
+carRouteList = document.querySelector('.car-route-list')
+carRouteTemplate = carRouteList.querySelector('.template')
+updateCarInfo = ->
+  return unless selectedCar
+  pos = "X=#{selectedCar.x.toFixed(2)}, Y=#{selectedCar.y.toFixed(2)}"
+  document.querySelector('.car-pos').textContent = pos
+  if not clock?
+    map.backend.listRoutes()
+map.backend.onRoutes = (routes) ->
+  return unless selectedCar
+  for node in routes.nodes
+    if node.uuid == selectedCar.uuid
+      selectedRoutes = node.routes
+      break
+  carRouteList.innerHTML = ''
+  if selectedRoutes
+    for route in selectedRoutes
+      item = carRouteTemplate.cloneNode(true)
+      item.querySelector('.dest-dist').textContent = route.dist.toFixed(2)
+      channelDisp = "==#{route.channel}==>"
+      item.querySelector('.dest-channel').textContent = channelDisp
+      item.querySelector('.dest-uuid').textContent = route.dest
+      destCar = null
+      for car in map.cars
+        if car.uuid == route.dest
+          destCar = car
+          break
+      return unless destCar
+      item.querySelector('.dest-color').style.backgroundColor = destCar.color
+      carRouteList.appendChild(item)
+
+
 mapContainer.addEventListener 'mousedown', (e) ->
   e.preventDefault()
   vw = mapContainer.offsetWidth
@@ -23,6 +55,11 @@ mapContainer.addEventListener 'mousedown', (e) ->
     if selectedCar
       car.selected = false for car in map.cars
       selectedCar.selected = true
+      document.querySelector('.infobar').classList.add('active')
+      document.querySelector('.car-color').style.backgroundColor =
+        selectedCar.color
+      document.querySelector('.car-uuid').textContent = selectedCar.uuid
+      updateCarInfo()
   else if selectedCar
     #target = map.roadmap.snapToRoad(target[0], target[1])
     return if target[0] < 0 or target[1] < 0
@@ -33,12 +70,15 @@ mapContainer.addEventListener 'mousedown', (e) ->
 
 mapContainer.addEventListener 'contextmenu', (e) -> e.preventDefault()
 
-clock = setInterval (-> map.tick()), 100
+clock = null
 play = ->
   pauseButton.classList.remove('active')
   playButton.classList.add('active')
   if not clock?
-    clock = setInterval (-> map.tick()), 100
+    clock = setInterval (->
+      map.tick()
+      updateCarInfo()
+    ), 100
 pause = ->
   pauseButton.classList.add('active')
   playButton.classList.remove('active')
@@ -57,3 +97,6 @@ pauseButton.addEventListener 'click', pause
 nextButton.addEventListener 'click', ->
   pause()
   map.tick()
+  updateCarInfo()
+
+play()

@@ -20,6 +20,8 @@ module.exports = class Map
       @cars.push(new Car(x, y, @layers.car, @roadmap))
       @cars[i].uuid = i.toString()
       @cars[i].color = carColors[i % carColors.length]
+    @backend.onChannels = @onChannels.bind(this)
+    @backend.onRoutes = @onRoutes.bind(@)
     @backend.init @cars
   createLayer: (layerName) ->
     if layerName and @layers[layerName]
@@ -64,16 +66,19 @@ module.exports = class Map
     for car in @cars
       car.tick()
       car.draw()
-    @backend.updateCars @cars, (frame) =>
-      @clearLayer('conn')
-      for i in [0...frame.channels.length]
-        channel = frame.channels[i]
-        continue if not channel
-        for [from, to] in channel
-          from = @cars[parseInt(from)]
-          to = @cars[parseInt(to)]
-          @drawConnection(from, to, i)
-      return
+    @backend.updateCars @cars
+  onChannels: (frame) ->
+    @clearLayer('conn')
+    for i in [0...frame.channels.length]
+      channel = frame.channels[i]
+      continue if not channel
+      for [from, to] in channel
+        from = @cars[parseInt(from)]
+        to = @cars[parseInt(to)]
+        @drawConnection(from, to, i)
+    @backend.listRoutes()
+    return
+  onRoutes: -> null
   drawConnection: (carA, carB, channel) ->
     layer = @layers.conn
     channelColors = ['#00f', '#f00', '#0f0', '#ff0', '#f0f', '#0ff']

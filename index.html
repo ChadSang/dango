@@ -11,7 +11,19 @@
     <button class="btn btn-pause"><span class="pause"></span></button>
     <button class="btn btn-next"><span class="next"></span></button>
   </div>
-  <div class="map"></div>
+  <div class="main">
+    <div class="map"></div><div class="infobar">
+      <h2><span class="car-color"></span> Car #<span class="car-uuid">3</span></h2>
+      <div class="car-pos"></div>
+      <ul class="car-route-list">
+        <li class="template">
+          <span class="dest-dist">3.00</span>
+          <span class="dest-channel">==&gt;</span>
+          <span class="dest-color"></span> Car #<span class="dest-uuid"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
   <script src="bundle.js"></script>
 </body>
 </html>

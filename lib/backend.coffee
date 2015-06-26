@@ -7,7 +7,15 @@ module.exports = class Backend
     cb = (res) =>
       buf = ""
       res.on 'data', (data) -> buf += data
-      res.on 'end', => callback?(JSON.parse(buf))
+      res.on 'end', =>
+        frame = try JSON.parse(buf)
+        return unless frame
+        callback?(frame)
+        switch frame.type
+          when 'channels'
+            @onChannels(frame)
+          when 'routes'
+            @onRoutes(frame)
 
     req = http.request({method: 'POST', path: '/message'}, cb)
     req.end(JSON.stringify(frame))
@@ -27,3 +35,5 @@ module.exports = class Backend
       type: 'update'
       nodes: @nodes(cars)
     @send(frame, cb)
+  listRoutes: (cb) ->
+    @send({type: 'listRoutes'}, cb)

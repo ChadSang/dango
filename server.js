@@ -36,10 +36,10 @@ var outFrame = function (str) {
 app.post('/message', function (req, res) {
   req.on('data', function (data) {
     cp.stdin.write(data);
-  })
+  });
   req.on('end', function () {
     cp.stdin.write("\r\n");
-  })
+  });
   //cp.stdin.write(JSON.stringify(res.body) + "\r\n");
   //cp.stdin.write(JSON.stringify({type: "update", nodes: []}) + "\r\n");
   //cp.stdin.write(JSON.stringify({type: "listRoutes"}) + "\r\n");

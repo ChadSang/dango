@@ -18,7 +18,16 @@ module.exports = Backend = (function() {
           return buf += data;
         });
         return res.on('end', function() {
-          return typeof callback === "function" ? callback(JSON.parse(buf)) : void 0;
+          frame = JSON.parse(buf);
+          if (typeof callback === "function") {
+            callback(frame);
+          }
+          switch (frame.type) {
+            case 'channels':
+              return _this.onChannels(frame);
+            case 'routes':
+              return _this.onRoutes(frame);
+          }
         });
       };
     })(this);
@@ -62,6 +71,12 @@ module.exports = Backend = (function() {
       nodes: this.nodes(cars)
     };
     return this.send(frame, cb);
+  };
+
+  Backend.prototype.listRoutes = function(cb) {
+    return this.send({
+      type: 'listRoutes'
+    }, cb);
   };
 
   return Backend;
@@ -241,6 +256,8 @@ module.exports = Map = (function() {
       this.cars[i].uuid = i.toString();
       this.cars[i].color = carColors[i % carColors.length];
     }
+    this.backend.onChannels = this.onChannels.bind(this);
+    this.backend.onRoutes = this.onRoutes.bind(this);
     this.backend.init(this.cars);
   }
 
@@ -309,24 +326,29 @@ module.exports = Map = (function() {
       car.tick();
       car.draw();
     }
-    return this.backend.updateCars(this.cars, (function(_this) {
-      return function(frame) {
-        var channel, from, i, k, l, len1, ref1, ref2, to;
-        _this.clearLayer('conn');
-        for (i = k = 0, ref1 = frame.channels.length; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {
-          channel = frame.channels[i];
-          if (!channel) {
-            continue;
-          }
-          for (l = 0, len1 = channel.length; l < len1; l++) {
-            ref2 = channel[l], from = ref2[0], to = ref2[1];
-            from = _this.cars[parseInt(from)];
-            to = _this.cars[parseInt(to)];
-            _this.drawConnection(from, to, i);
-          }
-        }
-      };
-    })(this));
+    return this.backend.updateCars(this.cars);
+  };
+
+  Map.prototype.onChannels = function(frame) {
+    var channel, from, i, j, k, len, ref, ref1, to;
+    this.clearLayer('conn');
+    for (i = j = 0, ref = frame.channels.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+      channel = frame.channels[i];
+      if (!channel) {
+        continue;
+      }
+      for (k = 0, len = channel.length; k < len; k++) {
+        ref1 = channel[k], from = ref1[0], to = ref1[1];
+        from = this.cars[parseInt(from)];
+        to = this.cars[parseInt(to)];
+        this.drawConnection(from, to, i);
+      }
+    }
+    this.backend.listRoutes();
+  };
+
+  Map.prototype.onRoutes = function() {
+    return null;
   };
 
   Map.prototype.drawConnection = function(carA, carB, channel) {
@@ -515,7 +537,7 @@ module.exports = Viewport = (function() {
 
 
 },{}],7:[function(require,module,exports){
-var Map, clock, map, mapContainer, nextButton, pause, pauseButton, play, playButton, selectedCar;
+var Map, carRouteList, carRouteTemplate, clock, map, mapContainer, nextButton, pause, pauseButton, play, playButton, selectedCar, updateCarInfo;
 
 Map = require('./lib/map');
 
@@ -530,6 +552,62 @@ window.addEventListener('resize', function(e) {
 });
 
 selectedCar = null;
+
+carRouteList = document.querySelector('.car-route-list');
+
+carRouteTemplate = carRouteList.querySelector('.template');
+
+updateCarInfo = function() {
+  var pos;
+  if (!selectedCar) {
+    return;
+  }
+  pos = "X=" + (selectedCar.x.toFixed(2)) + ", Y=" + (selectedCar.y.toFixed(2));
+  document.querySelector('.car-pos').textContent = pos;
+  if (typeof clock === "undefined" || clock === null) {
+    return map.backend.listRoutes();
+  }
+};
+
+map.backend.onRoutes = function(routes) {
+  var car, channelDisp, destCar, item, j, k, l, len, len1, len2, node, ref, ref1, route, selectedRoutes;
+  if (!selectedCar) {
+    return;
+  }
+  ref = routes.nodes;
+  for (j = 0, len = ref.length; j < len; j++) {
+    node = ref[j];
+    if (node.uuid === selectedCar.uuid) {
+      selectedRoutes = node.routes;
+      break;
+    }
+  }
+  carRouteList.innerHTML = '';
+  if (selectedRoutes) {
+    for (k = 0, len1 = selectedRoutes.length; k < len1; k++) {
+      route = selectedRoutes[k];
+      item = carRouteTemplate.cloneNode(true);
+      item.querySelector('.dest-dist').textContent = route.dist.toFixed(2);
+      channelDisp = "==" + route.channel + "==>";
+      item.querySelector('.dest-channel').textContent = channelDisp;
+      item.querySelector('.dest-uuid').textContent = route.dest;
+      destCar = null;
+      ref1 = map.cars;
+      for (l = 0, len2 = ref1.length; l < len2; l++) {
+        car = ref1[l];
+        if (car.uuid === route.dest) {
+          destCar = car;
+          break;
+        }
+      }
+      if (!destCar) {
+        return;
+      }
+      item.querySelector('.dest-color').style.backgroundColor = destCar.color;
+      carRouteList.appendChild(item);
+    }
+  }
+};
 
 mapContainer.addEventListener('mousedown', function(e) {
   var car, i, j, k, len, ref, ref1, target, vh, vw;
@@ -553,6 +631,10 @@ mapContainer.addEventListener('mousedown', function(e) {
         car.selected = false;
       }
       selectedCar.selected = true;
+      document.querySelector('.infobar').classList.add('active');
+      document.querySelector('.car-color').style.backgroundColor = selectedCar.color;
+      document.querySelector('.car-uuid').textContent = selectedCar.uuid;
+      updateCarInfo();
     }
   } else if (selectedCar) {
     if (target[0] < 0 || target[1] < 0) {
@@ -572,16 +654,15 @@ mapContainer.addEventListener('contextmenu', function(e) {
   return e.preventDefault();
 });
 
-clock = setInterval((function() {
-  return map.tick();
-}), 100);
+clock = null;
 
 play = function() {
   pauseButton.classList.remove('active');
   playButton.classList.add('active');
   if (clock == null) {
     return clock = setInterval((function() {
-      return map.tick();
+      map.tick();
+      return updateCarInfo();
     }), 100);
   }
 };
@@ -607,8 +688,11 @@ pauseButton.addEventListener('click', pause);
 
 nextButton.addEventListener('click', function() {
   pause();
-  return map.tick();
+  map.tick();
+  return updateCarInfo();
 });
+
+play();
 
 
 },{"./lib/map":4}],8:[function(require,module,exports){

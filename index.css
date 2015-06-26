@@ -113,7 +113,7 @@ body, html {
 .active .play::before, .active .play::after { border-left-color: #39f; }
 .active .next::before, .active .next::after { border-left-color: #39f; }
 
-.map {
+.main {
   position: absolute;
   top: 64px;
   right: 0;
@@ -123,10 +123,49 @@ body, html {
   height: auto;
 }
 
+.map {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  left: 0;
+  width: 70%;
+}
+
 .map canvas {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+.infobar {
+  box-sizing: border-box;
+  padding: 20px;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  right: 0;
+  width: 30%;
+  background-color: #000;
+  color: #fff;
+}
+
+.infobar > * {display: none;}
+.infobar.active > * {display: block;}
+
+.car-color, .dest-color {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  background-color: #00f;
+}
+
+.car-color {
+  border: solid 1px #f00;
+}
+
+.car-pos {
+  text-align: right;
 }
