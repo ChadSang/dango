@@ -185,7 +185,7 @@ public:
 		all_nodes[destination].receive(all_nodes[source]);
 	}
 	string get_uuid_by_index(int index) {
-		assert(index >= 0 && index < all_nodes.size());
+		assert(index >= 0);
 		return all_nodes[index].get_uuid();
 	}
 	int get_node_cnt() {

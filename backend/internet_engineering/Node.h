@@ -246,7 +246,9 @@ public:
 				|| routing_table[iter.first].second > iter.second.second + 1) {
 				iter.second.first = channel_id;
 				++iter.second.second; // ++distance
-				routing_table.insert(iter);
+				if (iter.second.second <= Physics::MAX_HOP) {
+					routing_table.insert(iter);
+				}
 			}
 		}
 		// cout << "END" << endl;
