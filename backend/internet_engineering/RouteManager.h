@@ -29,6 +29,10 @@ public:
 		channels->print();
 		// cout << "Route: " << endl;
 	}
+
+	void output() {
+		channels->output();
+	}
 	ChannelManager* get_channel_manager() {
 		return channels;
 	}

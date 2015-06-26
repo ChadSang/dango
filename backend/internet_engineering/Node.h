@@ -92,23 +92,30 @@ public:
 		for (int i = 0; i < channel_cnt; ++i) {
 			int user = channel_user[i];
 			if (user != -1) {
+				// user is using channel i
 				int min = user < index ? user : index;
 				int max = user > index ? user : index;
 
 				// multimap<int, int>::iterator iter;
 				// pair<multimap<int, int>::iterator, multimap<int, int>::iterator> ret;
-				bool connected = false;
+				bool in_range = false;
+
 				auto ret = communicable_nodes.equal_range(min);
 				for (auto iter = ret.first; iter != ret.second; ++iter) {
 					if ((*iter).second == max) {
-						connected = true;
+						in_range = true;
 						break;
 					}
 				}
-				if (!connected) {
+
+				if (!in_range) {
 					channel_user[i] = -1;
 					my_channel[i] = false;
 				}
+			}
+			else {
+				// nobody use this channel in the range
+				my_channel[i] = false;
 			}
 		}
 		check_routing_table();
@@ -144,11 +151,14 @@ public:
 		bool connected = false;
 		for (int i = 0; i < channel_cnt; ++i) {
 			if (channel_user[i] == n.index) {
+				// this node think that the channel i is used by n
+
 				if (my_channel[i]) {
 					if (!n.is_used_by_this_node(i)) {
 						// src node closes the connection
 						// cout << " src node closes the connection " << endl;
-						channel_user[i] = -1;
+
+						// channel_user[i] = -1;
 						my_channel[i] = false;
 					}
 					else {
@@ -307,10 +317,18 @@ public:
 		for (auto iter : routing_table) {
 			Json::Value route;
 
+			// dst(node_id) => pair(channel_id, distance)
+			// map<int, pair<int, int> > routing_table;
+
 			route["dest"] = iter.first;
 			route["dist"] = iter.second.second;
 			route["channel"] = iter.second.first;
-			route["via"] = channel_user[iter.second.first];
+			
+			int user_id = channel_user[iter.second.first];
+			if (user_id == -1) {
+				continue;
+			}
+			route["via"] = user_id;
 			
 			routes.append(route);
 		}
@@ -336,6 +354,30 @@ public:
 	}
 	string get_uuid() {
 		return uuid;
+	}
+
+	void output() {
+		cerr << "Node " << index << ": (" << x << ',' << y << ") v=(" << vx << ',' << vy << ")" << endl;
+		for (int i = 0; i < channel_cnt; ++i) {
+			cerr << '\t' << channel_user[i] << '(' << my_channel[i] << ')';
+		}
+		cerr << endl;
+	}
+	void output_channels() {
+		for (int i = 0; i < channel_cnt; ++i) {
+			if (my_channel[i]) {
+				cerr << index << " => " << channel_user[i] << " (by channel " << i << ")" << endl;
+			}
+		}
+	}
+	void output_routing_table() {
+		cerr << "node " << index << endl;
+		for (auto iter : routing_table) {
+			cerr << "\tTo node " << iter.first <<
+				"(by node " << channel_user[iter.second.first] <<
+				",channel " << iter.second.first <<
+				",distance " << iter.second.second << ")" << endl;
+		}
 	}
 
 	/* folloing methods for AODV */

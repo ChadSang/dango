@@ -185,6 +185,7 @@ public:
 		all_nodes[destination].receive(all_nodes[source]);
 	}
 	string get_uuid_by_index(int index) {
+		assert(index >= 0 && index < all_nodes.size());
 		return all_nodes[index].get_uuid();
 	}
 	int get_node_cnt() {
@@ -192,6 +193,29 @@ public:
 	}
 	int get_valid_node_cnt() {
 		return valid_node_cnt;
+	}
+	void output() {
+		cerr << valid_node_cnt << " nodes in total: " << endl;
+		int size = all_nodes.size();
+		for (int i = 0; i < size; ++i) {
+			if (valid_nodes[i]) all_nodes[i].output();
+		}
+		cerr << communicable_nodes.size() << " lines in total: " << endl;
+		for (auto it = communicable_nodes.begin(); it != communicable_nodes.end(); ++it) {
+			cerr << (*it).first << " <=> " << (*it).second << endl;
+		}
+	}
+	void output_channels() {
+		int size = all_nodes.size();
+		for (int i = 0; i < size; ++i) {
+			if (valid_nodes[i]) all_nodes[i].output_channels();
+		}
+	}
+	void output_routing_tables() {
+		int size = all_nodes.size();
+		for (int i = 0; i < size; ++i) {
+			if (valid_nodes[i]) all_nodes[i].output_routing_table();
+		}
 	}
 
 	virtual ~NodeManager();

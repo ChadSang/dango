@@ -60,6 +60,23 @@ public:
 	NodeManager* get_node_manager() {
 		return nodes;
 	}
+	void output() {
+		nodes->output();
+		cerr << "channel assignment: " << endl;
+		// nodes->print_channels();
+		connected_nodes = nodes->get_channels();
+		for (int i = 0; i < channel_cnt; ++i) {
+			cerr << "\tchannel " << i;
+			auto channel_users = connected_nodes[i];
+			for (auto iter = channel_users.begin(); iter != channel_users.end(); ++iter) {
+				cerr << " (" << (*iter).first << "," << (*iter).second << ")";
+			}
+			cerr << endl;
+		}
+
+		cerr << "routing tables: " << endl;
+		nodes->output_routing_tables();
+	}
 
 	Json::Value to_json() {
 		Json::Value output;
