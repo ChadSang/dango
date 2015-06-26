@@ -53,6 +53,8 @@ module.exports = class Car extends Drawable
     if not dest
       @sx = 0
       @sy = 0
+      target = @roadmap.snapToCross(Math.random() * 5, Math.random() * 5)
+      @setTarget(target)
     else
       if not xEqual
         @sx = @adjustedSpeed(@x, dest[0], @speed)

@@ -162,7 +162,7 @@ module.exports = Car = (function(superClass) {
   };
 
   Car.prototype.tick = function() {
-    var dest, waypoints, xEqual, yEqual;
+    var dest, target, waypoints, xEqual, yEqual;
     waypoints = this.waypoints;
     dest = waypoints[0];
     while (dest) {
@@ -177,6 +177,8 @@ module.exports = Car = (function(superClass) {
     if (!dest) {
       this.sx = 0;
       this.sy = 0;
+      target = this.roadmap.snapToCross(Math.random() * 5, Math.random() * 5);
+      this.setTarget(target);
     } else {
       if (!xEqual) {
         this.sx = this.adjustedSpeed(this.x, dest[0], this.speed);
