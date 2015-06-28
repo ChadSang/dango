@@ -10,30 +10,37 @@ class RouteManager
 
 public:
 	RouteManager(int channel_cnt, int radius) :
-		channels(new ChannelManager(channel_cnt, radius)) {
+		channels(new ChannelManager(channel_cnt, radius))
+	{
 	}
-	void flush() {
+	void flush()
+	{
 		channels->flush();
 		// cout << "route: flushing..." << endl;
 	}
-	void run() {
+	void run()
+	{
 		print();
 		string command;
-		while (getline(cin, command)) {
+		while (getline(cin, command))
+		{
 			if (command == "q") return;
 			flush();
 			print();
 		}
 	}
-	void print() {
+	void print()
+	{
 		channels->print();
 		// cout << "Route: " << endl;
 	}
 
-	void output() {
+	void output()
+	{
 		channels->output();
 	}
-	ChannelManager* get_channel_manager() {
+	ChannelManager* get_channel_manager()
+	{
 		return channels;
 	}
 
